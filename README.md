@@ -25,6 +25,7 @@ VayuSense/
 ├── data/                   # Data visualizations and datasets
 ├── models/                 # Trained ML models
 ├── notebooks/              # Jupyter notebooks for analysis
+├──screenshots              # EDA out put screenshots
 ├── src/                    # Source code modules
 │   └── vehicle_estimator.py
 ├── streamlit_app/          # Streamlit application
