@@ -128,15 +128,12 @@ def main():
         st.markdown("<h2 style='text-align: center;'>🌍 Country-wise Carbon Emission Prediction</h2>", unsafe_allow_html=True)
         
         # Load AI model
-        # Debug: Show current directory
-        st.info(f"Current directory: {os.getcwd()}")
-        st.info(f"Files in current directory: {os.listdir('.')[:10]}")
         
         try:
-            # Load model files from current directory (copied from models folder)
-            model = load_asset('xgboost_model.joblib')
-            scaler = load_asset('scaler.joblib')
-            feature_names = load_asset('feature_names.joblib')
+            # Load model files from streamlit_app directory
+            model = load_asset('streamlit_app/xgboost_model.joblib')
+            scaler = load_asset('streamlit_app/scaler.joblib')
+            feature_names = load_asset('streamlit_app/feature_names.joblib')
             
             if model is None:
                 st.error("⚠️ Failed to load AI model. Using simplified predictions.")
