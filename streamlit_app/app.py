@@ -115,77 +115,44 @@ def main():
     elif app_mode == '🌍 Country Prediction':
         st.markdown("<h2 style='text-align: center;'>🌍 Country-wise Carbon Emission Prediction</h2>", unsafe_allow_html=True)
         
-        # Check if models exist
-        model_exists = os.path.exists('../models/random_forest_model.joblib') or os.path.exists('../models/xgboost_model.joblib')
+        # For deployment, we'll use simplified predictions
+        st.info("Using simplified prediction model based on historical emission data.")
         
-        if not model_exists:
-            st.warning("⚠️ AI models not found. Please run the model training notebook first.")
-            st.info("To train the model:")
-            st.code("1. Open the notebook: 02_model_building.ipynb\n2. Run all cells to train and save the model")
-        else:
-            try:
-                # Load model and preprocessors
-                model_path = '../models/random_forest_model.joblib'
-                if not os.path.exists(model_path):
-                    # Use simplified prediction without ML model
-                    st.warning("Using simplified predictions. ML models will be available soon.")
-                    model = None
-                else:
-                    model = load_asset(model_path)
+        # Country selection
+        countries = ['United States', 'China', 'India', 'Germany', 'United Kingdom', 'France', 'Japan', 'Brazil', 'Canada', 'Australia']
+        selected_country = st.selectbox('Select Country', countries)
+        
+        # Year selection
+        selected_year = st.slider('Select Year for Prediction', 2024, 2050, 2030)
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            if st.button('🔮 Predict Emissions', type='primary'):
+                # Historical base emissions data (MT CO2 per capita)
+                base_emissions = {
+                    'United States': 15.5, 'China': 7.4, 'India': 1.9,
+                    'Germany': 8.1, 'United Kingdom': 5.5, 'France': 4.6,
+                    'Japan': 9.0, 'Brazil': 2.3, 'Canada': 15.4, 'Australia': 15.4
+                }
                 
-                scaler = load_asset('../models/scaler.joblib')
-                feature_names = load_asset('../models/feature_names.joblib')
+                base_value = base_emissions.get(selected_country, 5.0)
                 
-                # Country selection
-                countries = ['United States', 'China', 'India', 'Germany', 'United Kingdom', 'France', 'Japan', 'Brazil', 'Canada', 'Australia']
-                selected_country = st.selectbox('Select Country', countries)
+                # Simple prediction based on historical trends
+                # Assuming 2% annual growth with some variation
+                year_factor = 1 + (selected_year - 2024) * 0.02
+                variation = np.random.uniform(0.95, 1.05)  # ±5% variation
+                prediction = base_value * year_factor * variation
                 
-                # Year selection
-                selected_year = st.slider('Select Year for Prediction', 2024, 2050, 2030)
+                # Display results
+                st.success("✅ Prediction Complete!")
                 
-                col1, col2 = st.columns([2, 1])
-                
+                col1, col2, col3 = st.columns(3)
                 with col1:
-                    if st.button('🔮 Predict Emissions', type='primary'):
-                        # Create sample features (in production, use real country data)
-                        # This is a placeholder - you should load actual country features
-                        # Generate more realistic features based on country
-                        base_emissions = {
-                            'United States': 15.5, 'China': 7.4, 'India': 1.9,
-                            'Germany': 8.1, 'United Kingdom': 5.5, 'France': 4.6,
-                            'Japan': 9.0, 'Brazil': 2.3, 'Canada': 15.4, 'Australia': 15.4
-                        }
-                        
-                        base_value = base_emissions.get(selected_country, 5.0)
-                        
-                        if feature_names is not None and scaler is not None:
-                            # Add some variation
-                            sample_features = np.random.randn(1, len(feature_names)) * 0.5 + base_value
-                            # Scale features
-                            scaled_features = scaler.transform(sample_features)
-                        else:
-                            scaled_features = None
-                        
-                        # Make prediction
-                        if model is not None and scaler is not None:
-                            prediction = model.predict(scaled_features)[0]
-                            # Ensure prediction is positive and realistic
-                            prediction = max(abs(prediction), base_value * 0.8)
-                            prediction = min(prediction, base_value * 1.5)  # Cap at 150% of base
-                        else:
-                            # Simple prediction based on historical trends
-                            year_factor = 1 + (selected_year - 2024) * 0.02
-                            prediction = base_value * year_factor
-                        
-                        # Display results
-                        st.success("✅ Prediction Complete!")
-                        
-                        col1, col2, col3 = st.columns(3)
-                        with col1:
-                            st.metric(f"CO₂ Emissions ({selected_year})", f"{prediction:.2f} MT", "per capita")
-                        with col2:
-                            change = np.random.uniform(-5, 5)  # Placeholder for change
-                            st.metric("Change from 2023", f"{change:.1f}%", delta=f"{change:.1f}%")
+                    st.metric(f"CO₂ Emissions ({selected_year})", f"{prediction:.2f} MT", "per capita")
+                with col2:
+                    change = ((prediction - base_value) / base_value) * 100
+                    st.metric("Change from 2024", f"{change:.1f}%", delta=f"{change:.1f}%")
                         with col3:
                             st.metric("Emission Level", "Moderate", help="Based on global standards")
                         
