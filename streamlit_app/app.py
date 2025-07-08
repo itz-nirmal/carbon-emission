@@ -49,8 +49,20 @@ st.markdown("""
 # Load assets
 def load_asset(file_path):
     try:
-        return joblib.load(file_path)
-    except:
+        # Try to load from current directory first (for deployment)
+        if os.path.exists(file_path):
+            return joblib.load(file_path)
+        # Try with ./ prefix
+        elif os.path.exists(f'./{file_path}'):
+            return joblib.load(f'./{file_path}')
+        # Try from parent directory (for local development)
+        elif os.path.exists(f'../{file_path}'):
+            return joblib.load(f'../{file_path}')
+        else:
+            st.error(f"File not found: {file_path}")
+            return None
+    except Exception as e:
+        st.error(f"Error loading {file_path}: {str(e)}")
         return None
 
 # Main function
@@ -116,6 +128,10 @@ def main():
         st.markdown("<h2 style='text-align: center;'>🌍 Country-wise Carbon Emission Prediction</h2>", unsafe_allow_html=True)
         
         # Load AI model
+        # Debug: Show current directory
+        st.info(f"Current directory: {os.getcwd()}")
+        st.info(f"Files in current directory: {os.listdir('.')[:10]}")
+        
         try:
             # Load model files from current directory (copied from models folder)
             model = load_asset('xgboost_model.joblib')
