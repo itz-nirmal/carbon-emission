@@ -9,8 +9,7 @@ import joblib
 import os
 import sys
 
-# Add parent directory to path to import vehicle_estimator
-sys.path.append('../src')
+# Import vehicle_estimator from the same directory
 from vehicle_estimator import VehicleEstimator
 
 # Set page configuration
