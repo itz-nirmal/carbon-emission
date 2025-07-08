@@ -1,0 +1,18 @@
+{
+  "Country code": "ISO country code",
+  "Country name": "Full country name",
+  "Year": "Year of observation",
+  "EN.ATM.CO2E.KT": "CO2 emissions related metric",
+  "EN.ATM.CO2E.PC": "CO2 emissions related metric",
+  "EN.ATM.CO2E.PP.GD.KD": "CO2 emissions related metric",
+  "NY.GDP.MKTP.CD": "Gross Domestic Product related metric",
+  "GDP_per_capita": "Gross Domestic Product related metric",
+  "EN.ATM.CO2E.KT_lag1": "CO2 emissions related metric",
+  "EN.ATM.CO2E.KT_lag2": "CO2 emissions related metric",
+  "EN.ATM.CO2E.KT_lag3": "CO2 emissions related metric",
+  "EN.ATM.CO2E.KT_ma3": "CO2 emissions related metric",
+  "EN.ATM.CO2E.KT_ma5": "CO2 emissions related metric",
+  "EN.ATM.CO2E.KT_growth_rate": "CO2 emissions related metric",
+  "NY.GDP.MKTP.CD_growth_rate": "Gross Domestic Product related metric",
+  "SP.POP.TOTL_growth_rate": "Year-over-year growth rate"
+}
