@@ -28,10 +28,10 @@ VayuSense/
 ├── src/                    # Source code modules
 │   └── vehicle_estimator.py
 ├── streamlit_app/          # Streamlit application
-│   ├── app.py             # Main application file
-│   ├── logo.png           # Application logo
-│   └── favicon.ico        # Browser favicon
-└── README.md              # Project documentation
+│   ├── app.py              # Main application file
+│   ├── favicon.ico         # Browser favicon
+│   └── requirement.txt     # Required Package
+└── README.md               # Project documentation
 ```
 
 ## 🛠️ Technologies Used
