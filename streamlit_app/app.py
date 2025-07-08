@@ -115,8 +115,22 @@ def main():
     elif app_mode == '🌍 Country Prediction':
         st.markdown("<h2 style='text-align: center;'>🌍 Country-wise Carbon Emission Prediction</h2>", unsafe_allow_html=True)
         
-        # For deployment, we'll use simplified predictions
-        st.info("Using simplified prediction model based on historical emission data.")
+        # Load AI model
+        try:
+            # Load model files from current directory (copied from models folder)
+            model = load_asset('xgboost_model.joblib')
+            scaler = load_asset('scaler.joblib')
+            feature_names = load_asset('feature_names.joblib')
+            
+            if model is None:
+                st.error("⚠️ Failed to load AI model. Using simplified predictions.")
+                use_ai_model = False
+            else:
+                st.success("✓ AI model loaded successfully")
+                use_ai_model = True
+        except Exception as e:
+            st.error(f"Error loading model: {str(e)}")
+            use_ai_model = False
         
         # Country selection
         countries = ['United States', 'China', 'India', 'Germany', 'United Kingdom', 'France', 'Japan', 'Brazil', 'Canada', 'Australia']
@@ -138,11 +152,73 @@ def main():
                 
                 base_value = base_emissions.get(selected_country, 5.0)
                 
-                # Simple prediction based on historical trends
-                # Assuming 2% annual growth with some variation
-                year_factor = 1 + (selected_year - 2024) * 0.02
-                variation = np.random.uniform(0.95, 1.05)  # ±5% variation
-                prediction = base_value * year_factor * variation
+                if use_ai_model and model is not None and scaler is not None and feature_names is not None:
+                    # Use AI model for prediction
+                    try:
+                        # Create feature vector based on country and year
+                        # Initialize feature array
+                        feature_dict = {}
+                        
+                        # Set Year feature
+                        if 'Year' in feature_names:
+                            feature_dict['Year'] = selected_year
+                        
+                        # Set country-specific features (using approximate values)
+                        # These are placeholder values - in production, you'd load actual country data
+                        country_features = {
+                            'United States': {'NY.GDP.MKTP.CD': 2.5e13, 'SP.POP.TOTL': 3.3e8, 'EN.ATM.CO2E.PC': 15.5},
+                            'China': {'NY.GDP.MKTP.CD': 1.8e13, 'SP.POP.TOTL': 1.4e9, 'EN.ATM.CO2E.PC': 7.4},
+                            'India': {'NY.GDP.MKTP.CD': 3.5e12, 'SP.POP.TOTL': 1.4e9, 'EN.ATM.CO2E.PC': 1.9},
+                            'Germany': {'NY.GDP.MKTP.CD': 4.2e12, 'SP.POP.TOTL': 8.3e7, 'EN.ATM.CO2E.PC': 8.1},
+                            'United Kingdom': {'NY.GDP.MKTP.CD': 3.1e12, 'SP.POP.TOTL': 6.7e7, 'EN.ATM.CO2E.PC': 5.5},
+                            'France': {'NY.GDP.MKTP.CD': 2.9e12, 'SP.POP.TOTL': 6.5e7, 'EN.ATM.CO2E.PC': 4.6},
+                            'Japan': {'NY.GDP.MKTP.CD': 4.2e12, 'SP.POP.TOTL': 1.2e8, 'EN.ATM.CO2E.PC': 9.0},
+                            'Brazil': {'NY.GDP.MKTP.CD': 2.1e12, 'SP.POP.TOTL': 2.1e8, 'EN.ATM.CO2E.PC': 2.3},
+                            'Canada': {'NY.GDP.MKTP.CD': 2.0e12, 'SP.POP.TOTL': 3.8e7, 'EN.ATM.CO2E.PC': 15.4},
+                            'Australia': {'NY.GDP.MKTP.CD': 1.6e12, 'SP.POP.TOTL': 2.6e7, 'EN.ATM.CO2E.PC': 15.4}
+                        }
+                        
+                        # Get country-specific values
+                        country_data = country_features.get(selected_country, country_features['United States'])
+                        
+                        # Fill in the features
+                        for i, feature in enumerate(feature_names):
+                            if feature in country_data:
+                                feature_dict[feature] = country_data[feature]
+                            elif feature == 'SP.POP.GROW':
+                                feature_dict[feature] = 0.5  # 0.5% population growth
+                            elif feature == 'EG.USE.PCAP.KG.OE':
+                                feature_dict[feature] = 5000  # Energy use per capita
+                            else:
+                                # Use reasonable default values for other features
+                                feature_dict[feature] = np.random.randn() * 10 + 50
+                        
+                        # Create feature array in correct order
+                        sample_features = np.array([[feature_dict.get(f, 0) for f in feature_names]])
+                        
+                        # Scale features
+                        scaled_features = scaler.transform(sample_features)
+                        
+                        # Make prediction
+                        prediction = model.predict(scaled_features)[0]
+                        
+                        # Apply year adjustment
+                        year_factor = 1 + (selected_year - 2024) * 0.02
+                        prediction = prediction * year_factor
+                        
+                        st.info("🤖 Using AI model for prediction")
+                    except Exception as e:
+                        st.error(f"Error during prediction: {str(e)}")
+                        # Fallback to simple prediction
+                        year_factor = 1 + (selected_year - 2024) * 0.02
+                        variation = np.random.uniform(0.95, 1.05)
+                        prediction = base_value * year_factor * variation
+                else:
+                    # Simple prediction based on historical trends
+                    year_factor = 1 + (selected_year - 2024) * 0.02
+                    variation = np.random.uniform(0.95, 1.05)  # ±5% variation
+                    prediction = base_value * year_factor * variation
+                    st.info("📈 Using statistical model for prediction")
                 
                 # Display results
                 st.success("✅ Prediction Complete!")
@@ -186,10 +262,6 @@ def main():
                             hovermode='x'
                         )
                         st.plotly_chart(fig, use_container_width=True)
-                        
-            except Exception as e:
-                st.error(f"Error loading model: {str(e)}")
-                st.info("Please ensure the model is trained and saved in the correct location.")
 
     elif app_mode == '🚗 Vehicle Estimator':
         st.markdown("<h2 style='text-align: center;'>🚗 Vehicle Carbon Footprint Estimation</h2>", unsafe_allow_html=True)

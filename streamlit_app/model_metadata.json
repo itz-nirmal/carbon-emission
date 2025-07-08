@@ -1,0 +1,8 @@
+{
+    "model_type": "XGBoost",
+    "target_variable": "EN.ATM.CO2E.KT",
+    "feature_count": 21,
+    "test_r2": 0.999327808643179,
+    "test_rmse": 84044.20771265861,
+    "test_mae": 17821.554722293673
+}
