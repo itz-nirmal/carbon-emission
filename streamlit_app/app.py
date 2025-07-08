@@ -126,10 +126,13 @@ def main():
         else:
             try:
                 # Load model and preprocessors
-                if os.path.exists('../models/random_forest_model.joblib'):
-                    model = load_asset('../models/random_forest_model.joblib')
+                model_path = '../models/random_forest_model.joblib'
+                if not os.path.exists(model_path):
+                    # Use simplified prediction without ML model
+                    st.warning("Using simplified predictions. ML models will be available soon.")
+                    model = None
                 else:
-                    model = load_asset('../models/xgboost_model.joblib')
+                    model = load_asset(model_path)
                 
                 scaler = load_asset('../models/scaler.joblib')
                 feature_names = load_asset('../models/feature_names.joblib')
@@ -155,17 +158,25 @@ def main():
                         }
                         
                         base_value = base_emissions.get(selected_country, 5.0)
-                        # Add some variation
-                        sample_features = np.random.randn(1, len(feature_names)) * 0.5 + base_value
                         
-                        # Scale features
-                        scaled_features = scaler.transform(sample_features)
+                        if feature_names is not None and scaler is not None:
+                            # Add some variation
+                            sample_features = np.random.randn(1, len(feature_names)) * 0.5 + base_value
+                            # Scale features
+                            scaled_features = scaler.transform(sample_features)
+                        else:
+                            scaled_features = None
                         
                         # Make prediction
-                        prediction = model.predict(scaled_features)[0]
-                        # Ensure prediction is positive and realistic
-                        prediction = max(abs(prediction), base_value * 0.8)
-                        prediction = min(prediction, base_value * 1.5)  # Cap at 150% of base
+                        if model is not None and scaler is not None:
+                            prediction = model.predict(scaled_features)[0]
+                            # Ensure prediction is positive and realistic
+                            prediction = max(abs(prediction), base_value * 0.8)
+                            prediction = min(prediction, base_value * 1.5)  # Cap at 150% of base
+                        else:
+                            # Simple prediction based on historical trends
+                            year_factor = 1 + (selected_year - 2024) * 0.02
+                            prediction = base_value * year_factor
                         
                         # Display results
                         st.success("✅ Prediction Complete!")
