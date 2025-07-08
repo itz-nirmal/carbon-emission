@@ -229,39 +229,40 @@ def main():
                 with col2:
                     change = ((prediction - base_value) / base_value) * 100
                     st.metric("Change from 2024", f"{change:.1f}%", delta=f"{change:.1f}%")
-                        with col3:
-                            st.metric("Emission Level", "Moderate", help="Based on global standards")
-                        
-                        # Visualization
-                        years = list(range(2024, selected_year + 1))
-                        # Calculate emissions trend - starting from current year to selected year
-                        # The prediction is for the selected year, so we need to work backwards
-                        emissions = []
-                        for y in years:
-                            if y == selected_year:
-                                # This is our predicted value
-                                emissions.append(prediction)
-                            else:
-                                # Calculate historical/future trend
-                                # Assuming 2% annual growth rate
-                                years_diff = selected_year - y
-                                value = prediction / (1 + 0.02) ** years_diff
-                                emissions.append(max(0.1, value))
-                        
-                        fig = go.Figure()
-                        fig.add_trace(go.Scatter(
-                            x=years, y=emissions,
-                            mode='lines+markers',
-                            name='Predicted CO₂',
-                            line=dict(color='green', width=3)
-                        ))
-                        fig.update_layout(
-                            title=f'CO₂ Emission Forecast for {selected_country}',
-                            xaxis_title='Year',
-                            yaxis_title='CO₂ Emissions (MT per capita)',
-                            hovermode='x'
-                        )
-                        st.plotly_chart(fig, use_container_width=True)
+                with col3:
+                    level = "High" if prediction > 10 else "Moderate" if prediction > 5 else "Low"
+                    st.metric("Emission Level", level, help="Based on global standards")
+                
+                # Visualization
+                years = list(range(2024, selected_year + 1))
+                # Calculate emissions trend - starting from current year to selected year
+                # The prediction is for the selected year, so we need to work backwards
+                emissions = []
+                for y in years:
+                    if y == selected_year:
+                        # This is our predicted value
+                        emissions.append(prediction)
+                    else:
+                        # Calculate historical/future trend
+                        # Assuming 2% annual growth rate
+                        years_diff = selected_year - y
+                        value = prediction / (1 + 0.02) ** years_diff
+                        emissions.append(max(0.1, value))
+                
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(
+                    x=years, y=emissions,
+                    mode='lines+markers',
+                    name='Predicted CO₂',
+                    line=dict(color='green', width=3)
+                ))
+                fig.update_layout(
+                    title=f'CO₂ Emission Forecast for {selected_country}',
+                    xaxis_title='Year',
+                    yaxis_title='CO₂ Emissions (MT per capita)',
+                    hovermode='x'
+                )
+                st.plotly_chart(fig, use_container_width=True)
 
     elif app_mode == '🚗 Vehicle Estimator':
         st.markdown("<h2 style='text-align: center;'>🚗 Vehicle Carbon Footprint Estimation</h2>", unsafe_allow_html=True)
